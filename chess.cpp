@@ -26,7 +26,7 @@ map<Position, char> fenToMap() {
                 row++;
                 col = 0;
         } else if (isdigit(ch)) {
-                col += (int)ch;
+                col += int(ch) - 48;
         } else {
                 output[{ row, col }] = ch;
                 col++;
@@ -133,9 +133,26 @@ map<Position, set<Position>> getAllMoves( map<Position, char> pieces, map<char, 
 
         output[position] = moves;
         numMoves += moves.size();
+        // for (Position dest: moves) {
+        //     cout << "Possible move (row, col) -> (row, col): " << position.row << ", " << position.col << " -> " << dest.row << ", " << dest.col << "\n";
+        // }
     }
     cout << "NUM MOVES: " << numMoves << "\n";
     return output;
+}
+
+void display_board(map<Position, char> pieces) {
+    for (int row = 0; row < 8; row++){
+        cout << "\n";
+        for (int col = 0; col < 8; col++) {
+            if (pieces.contains({row, col})) {
+               cout << " "  << pieces[{row, col}] << " ";
+            } else {
+               cout << " - ";
+            }
+        }
+    }
+    cout << "\n\n";
 }
 
 int main() {
@@ -143,13 +160,30 @@ int main() {
     map<char, int> piecesNumSteps = getPieceNumSteps();
     map<char, vector<Direction>> piecesDirections = getPieceDirections();
 
-    Position position = {1, 0};
-    char piece = tolower(pieces[position]);
-    set<Position> moves = getMoves(position, piecesDirections[piece], piecesNumSteps[piece], pieces);
-    for (Position position: moves) {
-        cout << "Possible Move (row, col) : " << position.row << ", " << position.col << "\n";
-    }
+    while (true) {
+        display_board(pieces);
+        cout << "Enter Source (row col): ";
+        string input;
+        cin >> input;
+        Position source = {int(input.at(0)) - 48, int(input.at(1)) - 48};
+        cout << "Selected (row: " << source.row << ", col: " << source.col << ")\n";
 
-    getAllMoves(pieces, piecesDirections, piecesNumSteps);
+        char piece = tolower(pieces[source]);
+        set<Position> moves = getMoves(source, piecesDirections[piece], piecesNumSteps[piece], pieces);
+        cout << "num possible moves: " << moves.size() << "\n";
+        for (Position position: moves) {
+            cout << "Possible move (row, col) : " << position.row << ", " << position.col << "\n";
+        }
+        cout << "Enter destination (row col):" << "\n";
+        input = "";
+        cin >> input;
+        Position destination = {int(input.at(0)) - 48, int(input.at(1)) - 48};
+        if (moves.contains(destination)) {
+            pieces[destination] = pieces[source];
+            pieces.erase(source);
+        }
+        getAllMoves(pieces, piecesDirections, piecesNumSteps);
+
+    }
     return 1;
 }
