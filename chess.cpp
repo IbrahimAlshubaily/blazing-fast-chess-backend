@@ -35,6 +35,17 @@ map<Position, char> fenToMap() {
     return output;
 }
 
+map<char, int> getPieceNumSteps() {
+    map<char, int> output;
+    output['p'] = 1; // remove later, pawn move is specific.
+    output['n'] = 1;
+    output['k'] = 1;
+    output['q'] = 7;
+    output['b'] = 7;
+    output['r'] = 7;
+    return output;
+}
+
 map<char, vector<Direction>> getPieceDirections() {
     map<char, vector<Direction>> output;
     
@@ -52,13 +63,33 @@ map<char, vector<Direction>> getPieceDirections() {
     return output;
 }
 
-set<Position> getMoves(Position piecesPosition, vector<Direction> pieceDirections, map<Position, char> pieces) {
+set<Position> getMoves(Position piecesPosition, vector<Direction> pieceDirections, int numSteps, map<Position, char> pieces) {
     set<Position> output;
     char piece = pieces[piecesPosition];
-    cout << piece << "\n";
-    cout << piecesPosition.row << ", " << piecesPosition.col << "\n";
-    cout << pieceDirections.size() << "\n";
-    cout << pieces.size() << "\n";
+    Position currPosition;
+    for (Direction direction: pieceDirections) {
+        currPosition = {piecesPosition.row, piecesPosition.col};
+        for (int i = 1; i < numSteps + 1; i++) {
+            currPosition.row += direction.rowOffset;
+            currPosition.col += direction.colOffset;
+            if ( min(currPosition.row, currPosition.col) < 0 
+                || max(currPosition.row, currPosition.col) > 7) 
+                break;
+            
+            if (pieces.contains(currPosition)){
+                if (islower(piece) != islower(pieces[currPosition])) {
+                    output.insert(currPosition);
+                }
+                break;
+            }
+            output.insert(currPosition);
+        }
+    }
+    cout << "piece: " << piece << "\n";
+    cout << "row, col: " << piecesPosition.row << ", " << piecesPosition.col << "\n";
+    cout << "numDirections: " << pieceDirections.size() << "\n";
+    cout << "numSteps: " << numSteps << "\n";
+    cout << "numMoves: " << output.size() << "\n";
     return output;
 }
 
@@ -66,15 +97,12 @@ int main() {
     cout << "I am shazam!\n";
     
     map<Position, char> pieces = fenToMap();
-    cout << pieces.size() << "\n";
-    
+    map<char, int> piecesNumSteps = getPieceNumSteps();
     map<char, vector<Direction>> directions = getPieceDirections();
-    cout << directions.size() << "\n";
 
-    Position position = {1, 0};
+    Position position = {0, 1};
     char piece = pieces[position];
-    set<Position> moves = getMoves(position, directions[tolower(piece)], pieces);
-    cout << moves.size() << "\n";
-
+    set<Position> moves = getMoves(position, directions[tolower(piece)], piecesNumSteps[tolower(piece)], pieces);
+    
     return 1;
 }
