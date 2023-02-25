@@ -37,7 +37,7 @@ map<Position, char> fenToMap() {
 
 map<char, int> getPieceNumSteps() {
     map<char, int> output;
-    output['p'] = 1; // remove later, pawn move is specific.
+    output['p'] = 1; // not used, pawn move is specific.
     output['n'] = 1;
     output['k'] = 1;
     output['q'] = 7;
@@ -49,7 +49,7 @@ map<char, int> getPieceNumSteps() {
 map<char, vector<Direction>> getPieceDirections() {
     map<char, vector<Direction>> output;
     
-    output['p'] = {{1, 0}}; // remove later, pawn move is specific.
+    output['p'] = {}; // not used, pawn move is specific.
     output['n'] = {{1, 2}, {-1, 2}, {1, -2}, {-1, -2}, {2, 1}, {-2, 1}, {2, -1}, {-2, -1}};
 
     output['r'] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
@@ -62,10 +62,44 @@ map<char, vector<Direction>> getPieceDirections() {
     output['k'] = queenDirections;
     return output;
 }
+set<Position> getPawnMoves(Position piecesPosition, vector<Direction> pieceDirections, int numSteps, map<Position, char> pieces) {
+    set<Position> output;
+    char piece = pieces[piecesPosition];
+    
+    int rowOffset = 1;
+    if (!islower(piece)) {
+        rowOffset = -1;
+    }
+    // might need to deep copy positions
+    Position currPosition = {piecesPosition.row + rowOffset, piecesPosition.col};
+    if (!pieces.contains(currPosition)){
+        output.insert(currPosition);
+        if ((piecesPosition.row == 1 && islower(piece)) ||
+            (piecesPosition.row == 6 && !islower(piece))) {
+                // pass;
+                currPosition.row += rowOffset;
+                if (!pieces.contains(currPosition)){
+                    output.insert(currPosition);
+                }
+        }
+    }
+    currPosition.col += 1;
+    if (pieces.contains(currPosition)){
+        output.insert(currPosition);
+    }
+    currPosition.col -= 2;
+    if (pieces.contains(currPosition)){
+        output.insert(currPosition);
+    }
+    return output;
+}
 
 set<Position> getMoves(Position piecesPosition, vector<Direction> pieceDirections, int numSteps, map<Position, char> pieces) {
     set<Position> output;
     char piece = pieces[piecesPosition];
+    if (tolower(piece) == 'p') {
+        return getPawnMoves(piecesPosition, pieceDirections, numSteps, pieces);
+    }
     Position currPosition;
     for (Direction direction: pieceDirections) {
         currPosition = {piecesPosition.row, piecesPosition.col};
@@ -85,24 +119,19 @@ set<Position> getMoves(Position piecesPosition, vector<Direction> pieceDirection
             output.insert(currPosition);
         }
     }
-    cout << "piece: " << piece << "\n";
-    cout << "row, col: " << piecesPosition.row << ", " << piecesPosition.col << "\n";
-    cout << "numDirections: " << pieceDirections.size() << "\n";
-    cout << "numSteps: " << numSteps << "\n";
-    cout << "numMoves: " << output.size() << "\n";
     return output;
 }
 
 int main() {
-    cout << "I am shazam!\n";
-    
     map<Position, char> pieces = fenToMap();
     map<char, int> piecesNumSteps = getPieceNumSteps();
     map<char, vector<Direction>> directions = getPieceDirections();
 
-    Position position = {0, 1};
-    char piece = pieces[position];
-    set<Position> moves = getMoves(position, directions[tolower(piece)], piecesNumSteps[tolower(piece)], pieces);
-    
+    Position position = {1, 0};
+    char piece = tolower(pieces[position]);
+    set<Position> moves = getMoves(position, directions[piece], piecesNumSteps[piece], pieces);
+    for (Position position: moves) {
+        cout << "Possible Move (row, col) : " << position.row << ", " << position.col << "\n";
+    }
     return 1;
 }
