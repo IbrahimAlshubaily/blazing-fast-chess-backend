@@ -122,16 +122,34 @@ set<Position> getMoves(Position piecesPosition, vector<Direction> pieceDirection
     return output;
 }
 
+map<Position, set<Position>> getAllMoves( map<Position, char> pieces, map<char, vector<Direction>> piecesDirections, map<char, int> piecesNumSteps) {
+    map<Position, set<Position>> output;
+    int numMoves = 0;
+    for (auto const& [position, piece] : pieces){
+        set<Position> moves = getMoves(position, 
+        piecesDirections[tolower(piece)], 
+        piecesNumSteps[tolower(piece)],
+         pieces);
+
+        output[position] = moves;
+        numMoves += moves.size();
+    }
+    cout << "NUM MOVES: " << numMoves << "\n";
+    return output;
+}
+
 int main() {
     map<Position, char> pieces = fenToMap();
     map<char, int> piecesNumSteps = getPieceNumSteps();
-    map<char, vector<Direction>> directions = getPieceDirections();
+    map<char, vector<Direction>> piecesDirections = getPieceDirections();
 
     Position position = {1, 0};
     char piece = tolower(pieces[position]);
-    set<Position> moves = getMoves(position, directions[piece], piecesNumSteps[piece], pieces);
+    set<Position> moves = getMoves(position, piecesDirections[piece], piecesNumSteps[piece], pieces);
     for (Position position: moves) {
         cout << "Possible Move (row, col) : " << position.row << ", " << position.col << "\n";
     }
+
+    getAllMoves(pieces, piecesDirections, piecesNumSteps);
     return 1;
 }
