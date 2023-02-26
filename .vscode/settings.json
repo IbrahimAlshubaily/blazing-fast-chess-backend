@@ -3,6 +3,7 @@
     "iostream": "cpp",
     "iosfwd": "cpp",
     "map": "cpp",
-    "set": "cpp"
+    "set": "cpp",
+    "unordered_map": "cpp"
   }
 }
