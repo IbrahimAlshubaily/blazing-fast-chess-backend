@@ -183,7 +183,6 @@ int eval(map<Position, char> pieces, map<char, int> piecesScores, bool blackTurn
             otherScore += piecesScores[tolower(piece)];
         }
     }
-    // cout << score << " - " << otherScore << "\n";
     return score - otherScore;
 }
 
@@ -198,7 +197,7 @@ int max(map<Position, char> pieces, map<char, vector<Direction>> piecesDirection
             pieces[destination] = pieces[source];
             pieces.erase(source);
             
-            int score = min(pieces, piecesDirections, piecesNumSteps, piecesScores, blackTurn, depth - 1);
+            int score = min(pieces, piecesDirections, piecesNumSteps, piecesScores, !blackTurn, depth - 1);
             if (score > maxScore) {
                 maxScore = score;
             }
@@ -219,13 +218,13 @@ int min(map<Position, char> pieces, map<char, vector<Direction>> piecesDirection
         return eval(pieces, piecesScores, blackTurn);
     }
     int minScore = 1000000;
-    for (auto const& [source, destinations] : getAllMoves(pieces, piecesDirections, piecesNumSteps, !blackTurn)){
+    for (auto const& [source, destinations] : getAllMoves(pieces, piecesDirections, piecesNumSteps, blackTurn)){
         for (auto const& destination : destinations){
             char *prev_destination_piece = &pieces[destination];
             pieces[destination] = pieces[source];
             pieces.erase(source);
             
-            int score = max(pieces, piecesDirections, piecesNumSteps, piecesScores, blackTurn, depth - 1);
+            int score = max(pieces, piecesDirections, piecesNumSteps, piecesScores, !blackTurn, depth - 1);
             if (score < minScore) {
                 minScore = score;
             }
@@ -251,9 +250,8 @@ Move get_best_move(map<Position, char> pieces, map<char, vector<Direction>> piec
             pieces[destination] = pieces[source];
             pieces.erase(source);
 
-            int score = 0; // min(pieces, piecesDirections, piecesNumSteps, piecesScores, blackTurn, 0);
+            int score =  min(pieces, piecesDirections, piecesNumSteps, piecesScores, !blackTurn, 2);
             if (score > maxScore) {
-                cout << score << "\n";
                 maxScore = score;
                 bestMove = {source, destination};
             }
@@ -278,7 +276,7 @@ int main() {
 
     display_board(pieces);
     bool blackTurn = true;
-    int nSteps = 5;
+    int nSteps = 50;
     while (nSteps-- > 0) {
         Move bestMove = get_best_move(pieces, piecesDirections, piecesNumSteps, piecesScores, blackTurn);
         pieces[bestMove.destination] = pieces[bestMove.source];
@@ -286,7 +284,7 @@ int main() {
         blackTurn = !blackTurn;
         display_board(pieces);
 
-                // cout << "Enter Source (row col): ";
+        // cout << "Enter Source (row col): ";
         // string input;
         // cin >> input;
         // Position source = {int(input.at(0)) - 48, int(input.at(1)) - 48};
